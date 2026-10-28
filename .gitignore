@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.backup*
+*.before-*
+*.log
+.cache/
+.env
+.env.*
+.agents/
+.codex/
+.aws/
+.DS_Store
