@@ -1,90 +1,44 @@
-# Kelpos Hyprlock Theme
+# Kelpos Hyprlock — laptop
 
-A personal Hyprlock configuration with a blurred wallpaper, circular profile image, large clock, rounded password field and media visualizer.
+This `laptop` branch preserves the laptop lock screen. The desktop version remains on `main`; keep laptop updates on this branch.
 
-## Features
+It includes the laptop's larger clock/avatar layout, translucent username and password fields, coloured authentication feedback, song artwork, media controls and 20-bar Cava visualizer. Failed authentication briefly flashes the password border red, returning to neutral after 900 ms.
 
-- Shared JetBrainsMono Nerd Font typography and a centred date, clock and username.
-- Blurred wallpaper and circular profile image, both included under `assets/`.
-- Translucent password field with brief failure-border feedback and a Caps Lock indicator.
-- Current song, album artwork and clickable previous/play-pause/next controls.
-- A 20-bar Cava visualizer that runs alongside the lock screen.
-
-## Requirements
-
-- Hyprlock (the source configuration was developed with version 0.9.6).
-- JetBrainsMono Nerd Font.
-- Python 3 and Bash.
-- Playerctl and an MPRIS-capable player for media information and controls.
-- Cava with PulseAudio input, using PulseAudio or PipeWire's PulseAudio compatibility service.
-- curl for downloading remote album artwork.
-- A Wayland desktop session with `XDG_RUNTIME_DIR` set.
-
-The visualizer uses the Python standard library. If Cava cannot start, the wrapper still starts Hyprlock. Visualizer cleanup does not terminate the locker.
-
-## Installation
-
-Keep a backup of your current `~/.config/hypr/hyprlock.conf` and any matching scripts before copying these files. From the repository directory:
+## Install
 
 ```sh
-mkdir -p ~/.config/hypr/Scripts ~/.config/hypr/assets
+git clone --branch laptop https://github.com/Otamarau/kelpos-hyprlock-theme.git
+cd kelpos-hyprlock-theme
+backup="$HOME/.local/state/theme-backups/hyprlock-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$backup" ~/.config/hypr/assets
+cp -a ~/.config/hypr/. "$backup/"
 cp hyprlock.conf hyprlock-cava.conf ~/.config/hypr/
-install -m 755 Scripts/albumart.sh Scripts/songdetail.sh Scripts/mediactl.sh Scripts/lock-with-cava.py ~/.config/hypr/Scripts/
-cp assets/wallpaper.jpg assets/avatar.jpg ~/.config/hypr/assets/
+install -m 755 albumart.sh songdetail.sh mediactl.sh lock-with-cava.py ~/.config/hypr/
+cp assets/laptop-wallpaper.jpg assets/laptop-avatar.jpg ~/.config/hypr/assets/
 ```
 
-This installs only the lock-screen files; it does not replace your main Hyprland configuration. The repository is separate from the installed files: copy later live edits back into the repo before committing them.
+The published config points to the bundled images under `~/.config/hypr/assets/` instead of machine-specific image paths. Helpers are installed directly in `~/.config/hypr/`, matching the laptop Waybar power menu. Unlike the desktop branch, they are not under `Scripts/`.
 
-### Launch with media and the visualizer
+To lock with media and Cava:
 
 ```sh
-~/.config/hypr/Scripts/albumart.sh >/dev/null 2>&1
-~/.config/hypr/Scripts/lock-with-cava.py
+~/.config/hypr/albumart.sh >/dev/null 2>&1
+/usr/bin/python3 ~/.config/hypr/lock-with-cava.py
 ```
 
-This locks the screen. Use your normal system password to unlock it. For Hyprland configurations using the traditional binding syntax:
+This locks the screen; use your normal system password to unlock. Direct `hyprlock` launches omit the Cava helper. Configuration changes apply on the next lock.
 
-```ini
-bind = SUPER, L, exec, ~/.config/hypr/Scripts/albumart.sh >/dev/null 2>&1; ~/.config/hypr/Scripts/lock-with-cava.py
-```
+## Dependencies and checks
 
-The corresponding binding in the source desktop's Lua configuration is:
+The laptop uses Hyprlock 0.9.6, Python 3, Bash, JetBrainsMono Nerd Font, Playerctl, curl, Cava and a PulseAudio/PipeWire-Pulse source. A Wayland session with `XDG_RUNTIME_DIR` is required. If Cava fails, the wrapper still runs the locker and never terminates it during visualizer cleanup.
 
-```lua
-hl.bind("SUPER + L", hl.dsp.exec_cmd("~/.config/hypr/Scripts/albumart.sh >/dev/null 2>&1; ~/.config/hypr/Scripts/lock-with-cava.py"))
-```
-
-Use the syntax supported by your installed Hyprland version. Launching `hyprlock` directly displays the layout but does not start the Cava helper.
-
-## Customization
-
-- Replace `assets/wallpaper.jpg` and `assets/avatar.jpg`, then copy them to `~/.config/hypr/assets/`.
-- Edit `$lock_font` at the top of `hyprlock.conf` to change the shared font.
-- The empty `monitor` fields apply widgets to all monitors. Positions are tuned to the original desktop and may need adjusting for different resolutions.
-- Edit `hyprlock-cava.conf` for visualizer sensitivity and audio input. Its 20-bar output matches the Python renderer; change both together if changing the bar count.
-- Media scripts prefer a playing player, then a paused player. Artwork is downloaded only when needed and cached under `~/.cache/hyprlock` by default.
-- Visualizer state and logs live under `$XDG_RUNTIME_DIR/hyprlock-cava`, outside the repository.
-- The configuration uses `~/.cache/hyprlock/album-art` as its initial artwork path. If you use a custom `XDG_CACHE_HOME`, adjust that path as well.
-
-## Files
-
-| Path | Purpose |
-| --- | --- |
-| `hyprlock.conf` | Lock-screen layout, password field and media widgets |
-| `hyprlock-cava.conf` | Audio capture and raw visualizer output |
-| `Scripts/lock-with-cava.py` | Starts Hyprlock and manages the visualizer's lifetime |
-| `Scripts/albumart.sh` | Resolves/caches album artwork |
-| `Scripts/songdetail.sh` | Escapes media metadata for Pango labels |
-| `Scripts/mediactl.sh` | Playback actions and play/pause indicator |
-| `assets/` | Wallpaper and avatar from the original setup |
-
-The images are included as supplied with this personal setup; no separate image authorship or licensing claim is made here.
-
-## Checks
+Artwork caches live under `~/.cache/hyprlock`; visualizer state is in `$XDG_RUNTIME_DIR/hyprlock-cava`. No runtime caches, logs or authentication data are included. The bundled wallpaper/avatar are the same image assets already present in the desktop repository.
 
 ```sh
-python3 -m unittest discover -s tests -v
-for script in Scripts/*.sh; do bash -n "$script"; done
+/usr/bin/python3 -m unittest discover -s tests -v
+for script in *.sh; do bash -n "$script"; done
 ```
 
-These checks exercise frame rendering without starting Hyprlock or locking the desktop. Runtime compatibility still needs checking in your own Wayland session.
+Tests simulate visualizer frames without locking the desktop. Live authentication and layout should be checked in your session.
+
+Copy future live changes back into this checkout, retaining the portable asset paths, and push to `laptop`, not `main`.

@@ -52,7 +52,7 @@ def main():
     try:
         # Start the locker even if Cava is missing or fails.
         locker = subprocess.Popen(["hyprlock", *sys.argv[1:]])
-        config = Path(__file__).resolve().parent.parent / "hyprlock-cava.conf"
+        config = Path(__file__).resolve().parent / "hyprlock-cava.conf"
         with (runtime / "cava.log").open("w") as log:
             try:
                 cava = subprocess.Popen(["cava", "-p", str(config)], stdout=subprocess.PIPE, stderr=log)

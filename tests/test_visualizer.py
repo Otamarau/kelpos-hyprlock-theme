@@ -2,7 +2,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-spec = importlib.util.spec_from_file_location("visualizer", Path(__file__).resolve().parents[1] / "Scripts/lock-with-cava.py")
+spec = importlib.util.spec_from_file_location("visualizer", Path(__file__).resolve().parents[1] / "lock-with-cava.py")
 visualizer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(visualizer)
 
